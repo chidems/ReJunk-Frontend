@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Collection Request — ReJunk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/rejunk.css}" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar-customer}"></div>
+<main class="rj-page-bg">
+    <div class="container py-4">
+        <h1 class="rj-page-title mb-1">New Collection Request</h1>
+        <p class="rj-page-subtitle mb-4">Submit details about the items you'd like us to pick up.</p>
+        <form th:action="@{/collections/new}" method="post" enctype="multipart/form-data">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="rj-card">
+                        <h4 class="fw-bold mb-3">Collection Details</h4>
+                        <div class="mb-3">
+                            <label class="rj-form-label">Description of Items</label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Value"></textarea>
+                        </div>
+                        <label class="rj-form-label">Photos</label>
+                        <div class="d-flex gap-3 mt-1">
+                            <label class="rj-upload-box"><i class="bi bi-upload" style="font-size:24px;"></i><input type="file" name="photos" multiple hidden></label>
+                            <div class="rj-photo-thumb"></div>
+                            <div class="rj-photo-thumb"></div>
+                        </div>
+                    </div>
+                    <div class="rj-card mt-4" style="max-width:400px;">
+                        <h4 class="fw-bold mb-2">Confirm Pickup</h4>
+                        <p class="text-rj-mid small">Fee varies by distance and amount of items. Final fee confirmed after review.</p>
+                        <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Confirm &amp; Submit</button>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="rj-card">
+                        <h4 class="fw-bold mb-3">Pickup Details</h4>
+                        <div class="mb-3"><label class="rj-form-label">Pickup Address</label><input type="text" name="address" class="form-control" placeholder="Value"></div>
+                        <div class="mb-3"><label class="rj-form-label">City</label><select name="city" class="form-select"><option>Select</option><option>Vancouver</option><option>Burnaby</option></select></div>
+                        <div class="mb-3"><label class="rj-form-label">Preferred Date</label><input type="date" name="preferredDate" class="form-control"></div>
+                        <div class="mb-3"><label class="rj-form-label">Preferred Time</label><input type="time" name="preferredTime" class="form-control"></div>
+                        <div class="mb-3"><label class="rj-form-label">Special Instructions</label><textarea name="instructions" class="form-control" rows="3" placeholder="Value"></textarea></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

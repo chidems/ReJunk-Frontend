@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- PUBLIC NAVBAR (Landing, Sign Up) — has Marketplace, How It Works, Sign In, Sign Up -->
+<nav th:fragment="navbar-public" class="navbar navbar-expand-lg rj-navbar sticky-top">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">
+            <img th:src="@{/images/rejunk-logo.jpeg}" alt="ReJunk">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navPublic">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navPublic">
+            <ul class="navbar-nav align-items-center gap-1">
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'marketplace'} ? 'active'" th:href="@{/marketplace}">Marketplace</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'how'} ? 'active'" href="#">How It Works</a></li>
+                <li class="nav-item ms-2"><a class="btn-signin" th:href="@{/login}">Sign in</a></li>
+                <li class="nav-item ms-1"><a class="btn-signup" th:href="@{/register}">Sign Up</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- CUSTOMER NAVBAR — has Dashboard, Marketplace, My Requests, My Items, Notifications, Avatar -->
+<nav th:fragment="navbar-customer" class="navbar navbar-expand-lg rj-navbar sticky-top">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">
+            <img th:src="@{/images/rejunk-logo.jpeg}" alt="ReJunk">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navCustomer">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navCustomer">
+            <ul class="navbar-nav align-items-center gap-1">
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'dashboard'} ? 'active'" th:href="@{/dashboard}">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'marketplace'} ? 'active'" th:href="@{/marketplace}">Marketplace</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'requests'} ? 'active'" th:href="@{/collections}">My Requests</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'items'} ? 'active'" th:href="@{/my-items}">My Items</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'notifications'} ? 'active'" th:href="@{/notifications}">Notifications</a></li>
+                <li class="nav-item ms-2">
+                    <img class="avatar" th:src="@{/images/avatar-placeholder.png}" alt="Profile"
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22><circle cx=%2218%22 cy=%2218%22 r=%2218%22 fill=%22%23D4D1CA%22/><text x=%2218%22 y=%2222%22 text-anchor=%22middle%22 fill=%22%23888%22 font-size=%2214%22>?</text></svg>'">
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- ADMIN NAVBAR — has ADMIN badge, Dashboard, Add Items, Listings, Customers, gear icon -->
+<nav th:fragment="navbar-admin" class="navbar navbar-expand-lg rj-navbar sticky-top">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <a class="navbar-brand mb-0" th:href="@{/admin}">
+                <img th:src="@{/images/rejunk-logo.jpeg}" alt="ReJunk">
+            </a>
+            <span class="rj-admin-badge">Admin</span>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navAdmin">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navAdmin">
+            <ul class="navbar-nav align-items-center gap-1">
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'admin-dashboard'} ? 'active'" th:href="@{/admin}">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'add-items'} ? 'active'" th:href="@{/admin/add-items}">Add Items</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'listings'} ? 'active'" th:href="@{/admin/listings}">Listings</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'customers'} ? 'active'" th:href="@{/admin/customers}">Customers</a></li>
+                <li class="nav-item ms-2">
+                    <a class="settings-icon" href="#"><i class="bi bi-gear-fill"></i></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+</html>
