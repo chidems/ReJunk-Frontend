@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <span th:fragment="status-badge(status)" class="rj-badge"
-      th:classappend="
-        ${status == 'SUBMITTED'}   ? 'rj-badge-submitted' :
-        ${status == 'PAID'}        ? 'rj-badge-paid' :
-        ${status == 'SCHEDULED'}   ? 'rj-badge-scheduled' :
-        ${status == 'COLLECTED'}   ? 'rj-badge-collected' :
-        ${status == 'EVALUATED'}   ? 'rj-badge-evaluated' :
-        ${status == 'CLOSED'}      ? 'rj-badge-closed' :
-        ${status == 'ACTIVE'}      ? 'rj-badge-active' :
-        ${status == 'SOLD'}        ? 'rj-badge-sold' :
-        ${status == 'SUSPENDED'}   ? 'rj-badge-suspended' :
-        'rj-badge-closed'"
+      th:classappend="${
+        status == 'SUBMITTED'  ? 'rj-badge-submitted'  :
+        status == 'PAID'       ? 'rj-badge-paid'       :
+        status == 'SCHEDULED'  ? 'rj-badge-scheduled'  :
+        status == 'COLLECTED'  ? 'rj-badge-collected'  :
+        status == 'EVALUATED'  ? 'rj-badge-evaluated'  :
+        status == 'CLOSED'     ? 'rj-badge-closed'     :
+        status == 'ACTIVE'     ? 'rj-badge-active'     :
+        status == 'SOLD'       ? 'rj-badge-sold'       :
+        status == 'SUSPENDED'  ? 'rj-badge-suspended'  :
+        status == 'PROCESSING' ? 'rj-badge-processing' :
+        status == 'COMPLETED'  ? 'rj-badge-completed'  :
+        'rj-badge-closed'}"
       th:text="${status}">Status</span>
 </html>

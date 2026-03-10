@@ -1,8 +1,8 @@
 package com.example.rejunkfrontend.dto;
 
 public record RegisterRequest(
-        String name,
+        String fullName,
         String email,
         String phone,
-        String password
+        String passwordHash
 ) {}

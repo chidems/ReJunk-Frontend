@@ -289,6 +289,8 @@ img { max-width: 100%; }
 .rj-badge-active     { background: var(--rj-green-light); color: var(--rj-green); }
 .rj-badge-sold       { background: var(--rj-green-light); color: var(--rj-green); border: 1px solid var(--rj-green); }
 .rj-badge-suspended  { background: var(--rj-danger-light); color: var(--rj-danger); }
+.rj-badge-processing { background: var(--rj-orange-light); color: var(--rj-orange); }
+.rj-badge-completed  { background: var(--rj-green-light);  color: var(--rj-green); }
 
 /* ======================
    TABLES
