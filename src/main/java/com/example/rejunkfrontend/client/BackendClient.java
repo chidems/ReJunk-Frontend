@@ -20,13 +20,25 @@ public class BackendClient {
                 .build();
     }
 
-    public UserDto registerUser(RegisterRequest request) {
+    // ── Auth ─────────────────────────────────────────────────────────────────
+
+    public AuthResponse register(RegisterRequest request) {
         return restClient.post()
-                .uri("/users/register")
+                .uri("/auth/register")
                 .body(request)
                 .retrieve()
-                .body(UserDto.class);
+                .body(AuthResponse.class);
     }
+
+    public AuthResponse login(LoginRequest request) {
+        return restClient.post()
+                .uri("/auth/login")
+                .body(request)
+                .retrieve()
+                .body(AuthResponse.class);
+    }
+
+    // ── Users ─────────────────────────────────────────────────────────────────
 
     public UserDto getUserById(UUID id) {
         return restClient.get()
@@ -70,19 +82,7 @@ public class BackendClient {
                 .toBodilessEntity();
     }
 
-    public List<ItemDto> getActiveListings() {
-        return restClient.get()
-                .uri("/listings")
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
-    }
-
-    public ItemDto getListing(UUID id) {
-        return restClient.get()
-                .uri("/listings/{id}", id)
-                .retrieve()
-                .body(ItemDto.class);
-    }
+    // ── Collection Requests ───────────────────────────────────────────────────
 
     public List<CollectionRequestDto> getAllCollectionRequests() {
         return restClient.get()
@@ -91,9 +91,9 @@ public class BackendClient {
                 .body(new ParameterizedTypeReference<>() {});
     }
 
-    public List<CollectionRequestDto> getCollectionRequestsByCustomer(UUID customerId) {
+    public List<CollectionRequestDto> getCollectionRequestsByUser(UUID userId) {
         return restClient.get()
-                .uri("/collection-requests/customer/{customerId}", customerId)
+                .uri("/collection-requests/user/{userId}", userId)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }
@@ -105,12 +105,107 @@ public class BackendClient {
                 .body(CollectionRequestDto.class);
     }
 
-    public CollectionRequestDto createCollectionRequest(CollectionRequestForm form) {
+    public CollectionRequestDto createCollectionRequest(CreateCollectionRequestRequest request) {
         return restClient.post()
                 .uri("/collection-requests")
-                .body(form)
+                .body(request)
                 .retrieve()
                 .body(CollectionRequestDto.class);
+    }
+
+    public CollectionRequestDto updateCollectionRequestStatus(UUID id, String status) {
+        return restClient.patch()
+                .uri("/collection-requests/{id}/status?status={status}", id, status)
+                .retrieve()
+                .body(CollectionRequestDto.class);
+    }
+
+    // ── Items ─────────────────────────────────────────────────────────────────
+
+    public ItemDto createItem(CreateItemRequest request) {
+        return restClient.post()
+                .uri("/items")
+                .body(request)
+                .retrieve()
+                .body(ItemDto.class);
+    }
+
+    public ItemDto getItem(UUID id) {
+        return restClient.get()
+                .uri("/items/{id}", id)
+                .retrieve()
+                .body(ItemDto.class);
+    }
+
+    public List<ItemDto> getItemsByCollectionRequest(UUID collectionRequestId) {
+        return restClient.get()
+                .uri("/items/collection-request/{collectionRequestId}", collectionRequestId)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    public ItemDto evaluateItem(UUID id, EvaluateItemRequest request) {
+        return restClient.patch()
+                .uri("/items/{id}/evaluate", id)
+                .body(request)
+                .retrieve()
+                .body(ItemDto.class);
+    }
+
+    // ── Listings ──────────────────────────────────────────────────────────────
+
+    public ItemDto createListing(CreateListingRequest request) {
+        return restClient.post()
+                .uri("/listings")
+                .body(request)
+                .retrieve()
+                .body(ItemDto.class);
+    }
+
+    public List<ItemDto> getActiveListings() {
+        return restClient.get()
+                .uri("/listings")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    public List<ItemDto> getAllListings() {
+        return restClient.get()
+                .uri("/listings/all")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    public ItemDto getListing(UUID id) {
+        return restClient.get()
+                .uri("/listings/{id}", id)
+                .retrieve()
+                .body(ItemDto.class);
+    }
+
+    public ItemDto updateListingStatus(UUID id, UpdateListingStatusRequest request) {
+        return restClient.patch()
+                .uri("/listings/{id}/status", id)
+                .body(request)
+                .retrieve()
+                .body(ItemDto.class);
+    }
+
+    // ── Orders ────────────────────────────────────────────────────────────────
+
+    public OrderDto createOrder(CreateOrderRequest request) {
+        return restClient.post()
+                .uri("/orders")
+                .body(request)
+                .retrieve()
+                .body(OrderDto.class);
+    }
+
+    public OrderDto getOrder(UUID id) {
+        return restClient.get()
+                .uri("/orders/{id}", id)
+                .retrieve()
+                .body(OrderDto.class);
     }
 
     public List<OrderDto> getOrdersByBuyer(UUID buyerId) {
@@ -119,6 +214,23 @@ public class BackendClient {
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }
+
+    public List<OrderDto> getAllOrders() {
+        return restClient.get()
+                .uri("/orders")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    public OrderDto updateOrderStatus(UUID id, UpdateOrderStatusRequest request) {
+        return restClient.patch()
+                .uri("/orders/{id}/status", id)
+                .body(request)
+                .retrieve()
+                .body(OrderDto.class);
+    }
+
+    // ── Notifications ─────────────────────────────────────────────────────────
 
     public List<NotificationDto> getNotificationsByUser(UUID userId) {
         return restClient.get()

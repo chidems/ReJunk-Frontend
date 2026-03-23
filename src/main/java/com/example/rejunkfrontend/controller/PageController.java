@@ -2,11 +2,14 @@ package com.example.rejunkfrontend.controller;
 
 import com.example.rejunkfrontend.client.BackendClient;
 import com.example.rejunkfrontend.dto.*;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -18,44 +21,70 @@ public class PageController {
 
     private final BackendClient backendClient;
 
-    private static final DateTimeFormatter DATE_FMT =
-            DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
-    private static final DateTimeFormatter TIME_FMT =
-            DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault());
-
-    private static final List<String> TIMELINE_STATUSES =
-            List.of("SUBMITTED", "PAID", "SCHEDULED", "COLLECTED", "EVALUATED", "CLOSED");
-
     public PageController(BackendClient backendClient) {
         this.backendClient = backendClient;
     }
 
+    private AuthResponse getSessionUser(HttpSession session) {
+        return (AuthResponse) session.getAttribute("user");
+    }
+
+    // Public pages
+
     @GetMapping("/")
-    public String landing() { return "landing"; }
+    public String landing() {
+        return "landing";
+    }
 
     @GetMapping("/login")
-    public String login() { return "login"; }
+    public String login() {
+        return "login";
+    }
+
+    @PostMapping("/login")
+    public String doLogin(@RequestParam String email, @RequestParam String password,
+                          HttpSession session, RedirectAttributes ra) {
+        try {
+            AuthResponse user = backendClient.login(new LoginRequest(email, password));
+            session.setAttribute("user", user);
+            if ("ADMIN".equalsIgnoreCase(user.role())) {
+                return "redirect:/admin";
+            }
+            return "redirect:/dashboard";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Invalid email or password.");
+            return "redirect:/login";
+        }
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
 
     @GetMapping("/register")
-    public String register() { return "register"; }
+    public String register() {
+        return "register";
+    }
 
     @PostMapping("/register")
-    public String doRegister(
-            @RequestParam String name,
-            @RequestParam String email,
-            @RequestParam(required = false) String phone,
-            @RequestParam String password,
-            RedirectAttributes ra
-    ) {
+    public String doRegister(@RequestParam String name, @RequestParam String email,
+                             @RequestParam(required = false) String phone,
+                             @RequestParam String password,
+                             HttpSession session, RedirectAttributes ra) {
         try {
-            backendClient.registerUser(new RegisterRequest(name, email, phone, password));
-            ra.addFlashAttribute("success", "Account created! Please log in.");
-            return "redirect:/login";
+            AuthResponse user = backendClient.register(new RegisterRequest(name, email, phone, password));
+            session.setAttribute("user", user);
+            ra.addFlashAttribute("success", "Account created! Welcome to ReJunk.");
+            return "redirect:/dashboard";
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Registration failed: " + e.getMessage());
             return "redirect:/register";
         }
     }
+
+    // Marketplace
 
     @GetMapping("/marketplace")
     public String marketplace(Model model) {
@@ -82,59 +111,163 @@ public class PageController {
         return "marketplace/checkout";
     }
 
+    @PostMapping("/marketplace/{id}/buy")
+    public String doCheckout(@PathVariable UUID id, HttpSession session, RedirectAttributes ra) {
+        AuthResponse user = getSessionUser(session);
+        if (user == null) {
+            ra.addFlashAttribute("error", "Please log in to complete your purchase.");
+            return "redirect:/login";
+        }
+        try {
+            UUID buyerId = UUID.fromString(user.userId());
+            backendClient.createOrder(new CreateOrderRequest(buyerId, List.of(id)));
+            ra.addFlashAttribute("success", "Order placed successfully!");
+            return "redirect:/marketplace/order-tracking";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not place order: " + e.getMessage());
+            return "redirect:/marketplace/" + id + "/buy";
+        }
+    }
+
     @GetMapping("/marketplace/order-tracking")
-    public String orderTracking(Model model) {
-        // TODO: load orders for logged-in user once auth is implemented
-        model.addAttribute("orders", List.of());
+    public String orderTracking(HttpSession session, Model model) {
+        AuthResponse user = getSessionUser(session);
+        if (user == null) {
+            model.addAttribute("orders", List.of());
+            return "marketplace/order-tracking";
+        }
+        try {
+            UUID userId = UUID.fromString(user.userId());
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+            List<OrderDto> rawOrders = backendClient.getOrdersByBuyer(userId);
+            List<OrderView> orders = new ArrayList<>();
+            for (OrderDto order : rawOrders) {
+                String formatted = order.createdAt() != null ? fmt.format(order.createdAt()) : "";
+                orders.add(new OrderView(order.id(), order.totalAmount(), order.orderStatus(), formatted, order.items()));
+            }
+            model.addAttribute("orders", orders);
+        } catch (Exception e) {
+            model.addAttribute("orders", List.of());
+            model.addAttribute("error", "Could not load orders: " + e.getMessage());
+        }
         return "marketplace/order-tracking";
     }
 
+    // Customer pages
+
     @GetMapping("/dashboard")
-    public String customerDashboard(Model model) {
-        // TODO: load data for logged-in user once auth is implemented
-        model.addAttribute("recentRequests", List.of());
-        model.addAttribute("notifications", List.of());
+    public String customerDashboard(HttpSession session, Model model) {
+        AuthResponse user = getSessionUser(session);
+        if (user == null) return "redirect:/login";
+        UUID userId = UUID.fromString(user.userId());
+        try {
+            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+            DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault());
+            List<CollectionRequestDto> allRequests = backendClient.getCollectionRequestsByUser(userId);
+            List<DashboardRequestView> recentRequests = new ArrayList<>();
+            for (int i = 0; i < Math.min(5, allRequests.size()); i++) {
+                CollectionRequestDto r = allRequests.get(i);
+                String date = r.preferredPickupTime() != null ? dateFmt.format(r.preferredPickupTime()) : "";
+                String time = r.preferredPickupTime() != null ? timeFmt.format(r.preferredPickupTime()) : "";
+                String address = r.pickupAddress() != null ? r.pickupAddress() : "";
+                int itemCount = r.items() != null ? r.items().size() : 0;
+                recentRequests.add(new DashboardRequestView(r.id(), date, time, address, itemCount, r.requestStatus()));
+            }
+            model.addAttribute("recentRequests", recentRequests);
+        } catch (Exception e) {
+            model.addAttribute("recentRequests", List.of());
+        }
+        try {
+            model.addAttribute("notifications", backendClient.getNotificationsByUser(userId));
+        } catch (Exception e) {
+            model.addAttribute("notifications", List.of());
+        }
         return "customer/dashboard";
     }
 
     @GetMapping("/collections")
-    public String collections(Model model) {
-        // TODO: load for logged-in user once auth is implemented
-        model.addAttribute("collections", List.of());
+    public String collections(HttpSession session, Model model) {
+        AuthResponse user = getSessionUser(session);
+        if (user == null) return "redirect:/login";
+        try {
+            UUID userId = UUID.fromString(user.userId());
+            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+            DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault());
+            List<DashboardRequestView> collections = new ArrayList<>();
+            for (CollectionRequestDto r : backendClient.getCollectionRequestsByUser(userId)) {
+                String date = r.preferredPickupTime() != null ? dateFmt.format(r.preferredPickupTime()) : "";
+                String time = r.preferredPickupTime() != null ? timeFmt.format(r.preferredPickupTime()) : "";
+                String address = r.pickupAddress() != null ? r.pickupAddress() : "";
+                int itemCount = r.items() != null ? r.items().size() : 0;
+                collections.add(new DashboardRequestView(r.id(), date, time, address, itemCount, r.requestStatus()));
+            }
+            model.addAttribute("collections", collections);
+        } catch (Exception e) {
+            model.addAttribute("collections", List.of());
+            model.addAttribute("error", "Could not load collections: " + e.getMessage());
+        }
         return "customer/collections";
     }
 
     @GetMapping("/my-items")
-    public String myItems(Model model) {
-        // TODO: load for logged-in user once auth is implemented
-        model.addAttribute("items", List.of());
+    public String myItems(HttpSession session, Model model) {
+        AuthResponse user = getSessionUser(session);
+        if (user == null) return "redirect:/login";
+        try {
+            UUID userId = UUID.fromString(user.userId());
+            List<ItemDto> items = new ArrayList<>();
+            for (CollectionRequestDto r : backendClient.getCollectionRequestsByUser(userId)) {
+                if (r.items() != null) {
+                    items.addAll(r.items());
+                }
+            }
+            model.addAttribute("items", items);
+        } catch (Exception e) {
+            model.addAttribute("items", List.of());
+            model.addAttribute("error", "Could not load items: " + e.getMessage());
+        }
         return "customer/my-items";
     }
 
     @GetMapping("/notifications")
-    public String notifications(Model model) {
-        // TODO: load for logged-in user once auth is implemented
-        model.addAttribute("notifications", List.of());
+    public String notifications(HttpSession session, Model model) {
+        AuthResponse user = getSessionUser(session);
+        if (user == null) return "redirect:/login";
+        try {
+            UUID userId = UUID.fromString(user.userId());
+            model.addAttribute("notifications", backendClient.getNotificationsByUser(userId));
+        } catch (Exception e) {
+            model.addAttribute("notifications", List.of());
+            model.addAttribute("error", "Could not load notifications: " + e.getMessage());
+        }
         return "customer/notifications";
     }
 
     @GetMapping("/collections/new")
-    public String collectionRequest() { return "customer/collection-request"; }
+    public String collectionRequest(HttpSession session) {
+        if (getSessionUser(session) == null) return "redirect:/login";
+        return "customer/collection-request";
+    }
 
     @PostMapping("/collections/new")
-    public String doCreateCollection(
-            @RequestParam String address,
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String preferredDate,
-            @RequestParam(required = false) String preferredTime,
-            RedirectAttributes ra
-    ) {
+    public String doCreateCollection(@RequestParam String address,
+                                     @RequestParam(required = false) String city,
+                                     @RequestParam(required = false) String preferredDate,
+                                     @RequestParam(required = false) String preferredTime,
+                                     HttpSession session, RedirectAttributes ra) {
+        AuthResponse user = getSessionUser(session);
+        if (user == null) return "redirect:/login";
         try {
-            String fullAddress = (city != null && !city.isBlank()) ? address + ", " + city : address;
-            String isoDateTime = (preferredDate != null && preferredTime != null)
-                    ? preferredDate + "T" + preferredTime + ":00Z"
-                    : null;
-            backendClient.createCollectionRequest(new CollectionRequestForm(fullAddress, isoDateTime));
+            String fullAddress = address;
+            if (city != null && !city.isBlank()) {
+                fullAddress = address + ", " + city;
+            }
+            Instant pickupTime = null;
+            if (preferredDate != null && !preferredDate.isBlank() && preferredTime != null && !preferredTime.isBlank()) {
+                pickupTime = Instant.parse(preferredDate + "T" + preferredTime + ":00Z");
+            }
+            UUID customerId = UUID.fromString(user.userId());
+            backendClient.createCollectionRequest(new CreateCollectionRequestRequest(customerId, fullAddress, pickupTime, BigDecimal.ZERO));
             ra.addFlashAttribute("success", "Collection request submitted!");
             return "redirect:/dashboard";
         } catch (Exception e) {
@@ -144,21 +277,45 @@ public class PageController {
     }
 
     @GetMapping("/collections/{id}")
-    public String collectionDetail(@PathVariable UUID id, Model model) {
+    public String collectionDetail(@PathVariable UUID id, HttpSession session, Model model) {
+        if (getSessionUser(session) == null) return "redirect:/login";
         CollectionRequestDto req = backendClient.getCollectionRequest(id);
-        model.addAttribute("collection", toDetailView(req));
+        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault());
+        String date = req.preferredPickupTime() != null ? dateFmt.format(req.preferredPickupTime()) : "";
+        String time = req.preferredPickupTime() != null ? timeFmt.format(req.preferredPickupTime()) : "";
+
+        List<String> allStatuses = List.of("SUBMITTED", "PAID", "SCHEDULED", "COLLECTED", "EVALUATED", "CLOSED");
+        int currentIndex = allStatuses.indexOf(req.requestStatus());
+        List<TimelineStep> timeline = new ArrayList<>();
+        for (int i = 0; i < allStatuses.size(); i++) {
+            boolean pending = i > currentIndex;
+            timeline.add(new TimelineStep(allStatuses.get(i), pending ? "" : "Completed", pending));
+        }
+
+        model.addAttribute("collection", new CollectionDetailView(req.id(), date, req.requestStatus(), req.pickupAddress(), date, time, timeline));
         return "customer/collection-detail";
     }
+
+    // Admin pages
 
     @GetMapping("/admin")
     public String adminDashboard(Model model) {
         try {
             List<UserDto> users = backendClient.getAllUsers();
+            int activeCount = 0;
+            int suspendedCount = 0;
+            int customerCount = 0;
+            for (UserDto u : users) {
+                if ("ACTIVE".equals(u.status())) activeCount++;
+                if ("SUSPENDED".equals(u.status())) suspendedCount++;
+                if ("CUSTOMER".equals(u.role())) customerCount++;
+            }
             model.addAttribute("users", users);
             model.addAttribute("totalUsers", users.size());
-            model.addAttribute("activeUsers", users.stream().filter(u -> "ACTIVE".equals(u.status())).count());
-            model.addAttribute("suspendedUsers", users.stream().filter(u -> "SUSPENDED".equals(u.status())).count());
-            model.addAttribute("customerCount", users.stream().filter(u -> "CUSTOMER".equals(u.role())).count());
+            model.addAttribute("activeUsers", activeCount);
+            model.addAttribute("suspendedUsers", suspendedCount);
+            model.addAttribute("customerCount", customerCount);
         } catch (Exception e) {
             model.addAttribute("users", List.of());
             model.addAttribute("totalUsers", 0);
@@ -182,16 +339,40 @@ public class PageController {
     }
 
     @GetMapping("/admin/add-item")
-    public String addItem() { return "admin/add-item"; }
+    public String addItem(@RequestParam(required = false) UUID itemId, Model model) {
+        if (itemId != null) {
+            try {
+                model.addAttribute("item", backendClient.getItem(itemId));
+            } catch (Exception e) {
+                model.addAttribute("error", "Could not load item: " + e.getMessage());
+            }
+        }
+        return "admin/add-item";
+    }
+
+    @PostMapping("/admin/add-item")
+    public String doAddItem(@RequestParam UUID itemId, @RequestParam String condition,
+                            @RequestParam BigDecimal price, RedirectAttributes ra) {
+        try {
+            backendClient.evaluateItem(itemId, new EvaluateItemRequest(condition, price));
+            backendClient.createListing(new CreateListingRequest(itemId, price));
+            ra.addFlashAttribute("success", "Item evaluated and listed on the marketplace.");
+            return "redirect:/admin/listings";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not list item: " + e.getMessage());
+            return "redirect:/admin/add-item?itemId=" + itemId;
+        }
+    }
 
     @GetMapping("/admin/customers")
     public String adminCustomers(Model model) {
         try {
-            List<CustomerView> customers = backendClient.getCustomers().stream()
-                    .map(u -> new CustomerView(
-                            u.id(), u.fullName(), u.email(), u.phone(), u.status(), u.role(),
-                            u.createdAt() != null ? DATE_FMT.format(u.createdAt()) : ""))
-                    .toList();
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+            List<CustomerView> customers = new ArrayList<>();
+            for (UserDto u : backendClient.getCustomers()) {
+                String createdAt = u.createdAt() != null ? fmt.format(u.createdAt()) : "";
+                customers.add(new CustomerView(u.id(), u.fullName(), u.email(), u.phone(), u.status(), u.role(), createdAt));
+            }
             model.addAttribute("customers", customers);
         } catch (Exception e) {
             model.addAttribute("customers", List.of());
@@ -202,8 +383,12 @@ public class PageController {
 
     @GetMapping("/admin/listings")
     public String listings(Model model) {
-        model.addAttribute("listings", backendClient.getActiveListings());
-        model.addAttribute("customers", backendClient.getCustomers());
+        try {
+            model.addAttribute("listings", backendClient.getAllListings());
+        } catch (Exception e) {
+            model.addAttribute("listings", List.of());
+            model.addAttribute("error", "Could not load listings: " + e.getMessage());
+        }
         return "admin/listings";
     }
 
@@ -226,24 +411,5 @@ public class PageController {
         backendClient.deleteUser(id);
         ra.addFlashAttribute("success", "User deleted.");
         return "redirect:/admin";
-    }
-
-    private CollectionDetailView toDetailView(CollectionRequestDto req) {
-        String date = req.preferredPickupTime() != null ? DATE_FMT.format(req.preferredPickupTime()) : "";
-        String time = req.preferredPickupTime() != null ? TIME_FMT.format(req.preferredPickupTime()) : "";
-        return new CollectionDetailView(
-                req.id(), date, req.requestStatus(), req.pickupAddress(), date, time,
-                buildTimeline(req.requestStatus())
-        );
-    }
-
-    private List<TimelineStep> buildTimeline(String currentStatus) {
-        int currentIndex = TIMELINE_STATUSES.indexOf(currentStatus);
-        List<TimelineStep> steps = new ArrayList<>();
-        for (int i = 0; i < TIMELINE_STATUSES.size(); i++) {
-            boolean pending = i > currentIndex;
-            steps.add(new TimelineStep(TIMELINE_STATUSES.get(i), pending ? "" : "Completed", pending));
-        }
-        return steps;
     }
 }

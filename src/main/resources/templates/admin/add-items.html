@@ -56,7 +56,7 @@
                 <div class="text-end" style="flex-shrink:0;">
                     <div th:if="${item.evaluatedPrice != null}"
                          class="fw-bold mb-2" th:text="'$' + ${item.evaluatedPrice}">$0.00</div>
-                    <a th:href="@{/admin/add-item}" class="btn btn-primary btn-sm">
+                    <a th:href="@{/admin/add-item(itemId=${item.id})}" class="btn btn-primary btn-sm">
                         <i class="bi bi-plus-lg me-1"></i> List Item
                     </a>
                 </div>

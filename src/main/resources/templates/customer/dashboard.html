@@ -17,8 +17,12 @@
                 <div class="rj-card-green p-3">
                     <div th:each="req : ${recentRequests}" class="rj-request-card">
                         <div>
-                            <div class="req-id" th:text="${req.id}">CR-1042</div>
-                            <div class="req-meta"><span th:text="${req.date}">Feb 8, 2026</span> - <span th:text="${req.itemCount} + ' Items'">3 Items</span></div>
+                            <div class="req-id" th:text="'Request #' + ${req.id}">Request #CR-1042</div>
+                            <div class="req-meta">
+                                <span th:text="${req.date}">Feb 8, 2026</span>
+                                <span th:if="${!#strings.isEmpty(req.time)}"> · <span th:text="${req.time}">10:00 AM</span></span>
+                                <span th:if="${!#strings.isEmpty(req.address)}"> · <span th:text="${req.address}">123 Main St</span></span>
+                            </div>
                         </div>
                         <span th:replace="~{fragments/helpers :: status-badge(${req.status})}"></span>
                     </div>
@@ -33,6 +37,9 @@
                 </div>
                 <h2 class="rj-section-title">Recent Notifications</h2>
                 <div class="rj-card-green p-0 overflow-hidden">
+                    <div th:if="${#lists.isEmpty(notifications)}" class="rj-notif-card text-rj-light">
+                        You have no notifications.
+                    </div>
                     <div th:each="notif : ${notifications}" class="rj-notif-card">
                         <span class="rj-notif-icon"><i class="bi bi-info-circle"></i></span>
                         <span th:text="${notif.message}">Notification text</span>

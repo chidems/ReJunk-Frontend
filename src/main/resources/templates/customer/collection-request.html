@@ -13,6 +13,14 @@
     <div class="container py-4">
         <h1 class="rj-page-title mb-1">New Collection Request</h1>
         <p class="rj-page-subtitle mb-4">Submit details about the items you'd like us to pick up.</p>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible mb-3" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${success}" class="alert alert-success alert-dismissible mb-3" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
         <form th:action="@{/collections/new}" method="post" enctype="multipart/form-data">
             <div class="row g-4">
                 <div class="col-lg-7">
