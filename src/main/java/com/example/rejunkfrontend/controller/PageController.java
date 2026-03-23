@@ -8,11 +8,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -241,6 +244,34 @@ public class PageController {
             model.addAttribute("error", "Could not load notifications: " + e.getMessage());
         }
         return "customer/notifications";
+    }
+
+    @GetMapping("/profile")
+    public String profile(HttpSession session, Model model) {
+        if (getSessionUser(session) == null) return "redirect:/login";
+        return "customer/profile";
+    }
+
+    @PostMapping("/profile/address")
+    public String updateAddress(@RequestParam String address, HttpSession session, RedirectAttributes ra) {
+        session.setAttribute("profileAddress", address);
+        ra.addFlashAttribute("success", "Address saved.");
+        return "redirect:/profile";
+    }
+
+    @PostMapping("/profile/avatar")
+    public String updateAvatar(@RequestParam MultipartFile avatar, HttpSession session, RedirectAttributes ra) {
+        if (!avatar.isEmpty()) {
+            try {
+                String base64 = Base64.getEncoder().encodeToString(avatar.getBytes());
+                String dataUrl = "data:" + avatar.getContentType() + ";base64," + base64;
+                session.setAttribute("avatarUrl", dataUrl);
+                ra.addFlashAttribute("success", "Profile picture updated.");
+            } catch (Exception e) {
+                ra.addFlashAttribute("error", "Could not update avatar: " + e.getMessage());
+            }
+        }
+        return "redirect:/profile";
     }
 
     @GetMapping("/collections/new")

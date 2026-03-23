@@ -5,7 +5,7 @@
 <nav th:fragment="navbar-public" class="navbar navbar-expand-lg rj-navbar sticky-top">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}">
-            <img th:src="@{/images/rejunk-logo.jpeg}" alt="ReJunk">
+            <img th:src="@{/images/rejunk-logo-transparent.png}" alt="ReJunk">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navPublic">
             <span class="navbar-toggler-icon"></span>
@@ -25,7 +25,7 @@
 <nav th:fragment="navbar-customer" class="navbar navbar-expand-lg rj-navbar sticky-top">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}">
-            <img th:src="@{/images/rejunk-logo.jpeg}" alt="ReJunk">
+            <img th:src="@{/images/rejunk-logo-transparent.png}" alt="ReJunk">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navCustomer">
             <span class="navbar-toggler-icon"></span>
@@ -38,8 +38,13 @@
                 <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'items'} ? 'active'" th:href="@{/my-items}">My Items</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'notifications'} ? 'active'" th:href="@{/notifications}">Notifications</a></li>
                 <li class="nav-item ms-2">
-                    <img class="avatar" th:src="@{/images/avatar-placeholder.png}" alt="Profile"
-                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22><circle cx=%2218%22 cy=%2218%22 r=%2218%22 fill=%22%23D4D1CA%22/><text x=%2218%22 y=%2222%22 text-anchor=%22middle%22 fill=%22%23888%22 font-size=%2214%22>?</text></svg>'">
+                    <a th:href="@{/profile}" class="d-block">
+                        <img th:if="${session.avatarUrl != null}" class="avatar" th:src="${session.avatarUrl}" alt="Profile">
+                        <div th:unless="${session.avatarUrl != null}"
+                             class="avatar"
+                             style="background:var(--rj-green);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;"
+                             th:text="${session.user != null ? #strings.substring(session.user.fullName,0,1).toUpperCase() : '?'}">U</div>
+                    </a>
                 </li>
             </ul>
         </div>
@@ -51,7 +56,7 @@
     <div class="container">
         <div class="d-flex align-items-center">
             <a class="navbar-brand mb-0" th:href="@{/admin}">
-                <img th:src="@{/images/rejunk-logo.jpeg}" alt="ReJunk">
+                <img th:src="@{/images/rejunk-logo-transparent.png}" alt="ReJunk">
             </a>
             <span class="rj-admin-badge">Admin</span>
         </div>
