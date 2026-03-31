@@ -412,6 +412,35 @@ public class PageController {
         return "admin/customers";
     }
 
+    @GetMapping("/admin/orders")
+    public String adminOrders(Model model) {
+        try {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+            List<OrderDto> rawOrders = backendClient.getAllOrders();
+            List<OrderView> orders = new ArrayList<>();
+            for (OrderDto order : rawOrders) {
+                String formatted = order.createdAt() != null ? fmt.format(order.createdAt()) : "";
+                orders.add(new OrderView(order.id(), order.totalAmount(), order.orderStatus(), formatted, order.items()));
+            }
+            model.addAttribute("orders", orders);
+        } catch (Exception e) {
+            model.addAttribute("orders", List.of());
+            model.addAttribute("error", "Could not load orders: " + e.getMessage());
+        }
+        return "admin/orders";
+    }
+
+    @PostMapping("/admin/orders/{id}/status")
+    public String updateAdminOrderStatus(@PathVariable UUID id, @RequestParam String status, RedirectAttributes ra) {
+        try {
+            backendClient.updateOrderStatus(id, new UpdateOrderStatusRequest(status));
+            ra.addFlashAttribute("success", "Order status updated.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not update order: " + e.getMessage());
+        }
+        return "redirect:/admin/orders";
+    }
+
     @GetMapping("/admin/listings")
     public String listings(Model model) {
         try {

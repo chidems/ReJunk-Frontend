@@ -20,7 +20,7 @@ public class BackendClient {
                 .build();
     }
 
-    // ── Auth ─────────────────────────────────────────────────────────────────
+    /// AUTH
 
     public AuthResponse register(RegisterRequest request) {
         return restClient.post()
@@ -38,7 +38,7 @@ public class BackendClient {
                 .body(AuthResponse.class);
     }
 
-    // ── Users ─────────────────────────────────────────────────────────────────
+    /// USERS
 
     public UserDto getUserById(UUID id) {
         return restClient.get()
@@ -82,7 +82,7 @@ public class BackendClient {
                 .toBodilessEntity();
     }
 
-    // ── Collection Requests ───────────────────────────────────────────────────
+    //// COLLECTION REQ
 
     public List<CollectionRequestDto> getAllCollectionRequests() {
         return restClient.get()
@@ -120,7 +120,7 @@ public class BackendClient {
                 .body(CollectionRequestDto.class);
     }
 
-    // ── Items ─────────────────────────────────────────────────────────────────
+    /// ITEMS
 
     public ItemDto createItem(CreateItemRequest request) {
         return restClient.post()
@@ -152,7 +152,7 @@ public class BackendClient {
                 .body(ItemDto.class);
     }
 
-    // ── Listings ──────────────────────────────────────────────────────────────
+    /// LISTINGS
 
     public ItemDto createListing(CreateListingRequest request) {
         return restClient.post()
@@ -191,7 +191,8 @@ public class BackendClient {
                 .body(ItemDto.class);
     }
 
-    // ── Orders ────────────────────────────────────────────────────────────────
+
+    ///  ORDERS
 
     public OrderDto createOrder(CreateOrderRequest request) {
         return restClient.post()
@@ -230,7 +231,7 @@ public class BackendClient {
                 .body(OrderDto.class);
     }
 
-    // ── Notifications ─────────────────────────────────────────────────────────
+    /// NOTIFS
 
     public List<NotificationDto> getNotificationsByUser(UUID userId) {
         return restClient.get()

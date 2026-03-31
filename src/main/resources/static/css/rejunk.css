@@ -184,6 +184,9 @@ img { max-width: 100%; }
 }
 .rj-hero {
     background-color: var(--rj-cream);
+    background-image: linear-gradient(rgba(245, 243, 238, 0.55), rgba(245, 243, 238, 0.55)), url('/images/hero_img.jpg');
+    background-size: cover;
+    background-position: center;
     padding: 60px 0 40px;
     text-align: center;
 }
