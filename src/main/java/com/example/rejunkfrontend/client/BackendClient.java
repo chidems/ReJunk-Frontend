@@ -40,13 +40,6 @@ public class BackendClient {
 
     /// USERS
 
-    public UserDto getUserById(UUID id) {
-        return restClient.get()
-                .uri("/users/{id}", id)
-                .retrieve()
-                .body(UserDto.class);
-    }
-
     public List<UserDto> getAllUsers() {
         return restClient.get()
                 .uri("/users")
@@ -122,26 +115,11 @@ public class BackendClient {
 
     /// ITEMS
 
-    public ItemDto createItem(CreateItemRequest request) {
-        return restClient.post()
-                .uri("/items")
-                .body(request)
-                .retrieve()
-                .body(ItemDto.class);
-    }
-
     public ItemDto getItem(UUID id) {
         return restClient.get()
                 .uri("/items/{id}", id)
                 .retrieve()
                 .body(ItemDto.class);
-    }
-
-    public List<ItemDto> getItemsByCollectionRequest(UUID collectionRequestId) {
-        return restClient.get()
-                .uri("/items/collection-request/{collectionRequestId}", collectionRequestId)
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
     }
 
     public ItemDto evaluateItem(UUID id, EvaluateItemRequest request) {
@@ -183,28 +161,12 @@ public class BackendClient {
                 .body(ItemDto.class);
     }
 
-    public ItemDto updateListingStatus(UUID id, UpdateListingStatusRequest request) {
-        return restClient.patch()
-                .uri("/listings/{id}/status", id)
-                .body(request)
-                .retrieve()
-                .body(ItemDto.class);
-    }
-
-
     ///  ORDERS
 
     public OrderDto createOrder(CreateOrderRequest request) {
         return restClient.post()
                 .uri("/orders")
                 .body(request)
-                .retrieve()
-                .body(OrderDto.class);
-    }
-
-    public OrderDto getOrder(UUID id) {
-        return restClient.get()
-                .uri("/orders/{id}", id)
                 .retrieve()
                 .body(OrderDto.class);
     }
@@ -238,5 +200,12 @@ public class BackendClient {
                 .uri("/notifications/user/{userId}", userId)
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
+    }
+
+    public void markNotificationRead(UUID id) {
+        restClient.patch()
+                .uri("/notifications/{id}/read", id)
+                .retrieve()
+                .toBodilessEntity();
     }
 }

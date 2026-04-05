@@ -13,6 +13,7 @@
         status == 'SUSPENDED'  ? 'rj-badge-suspended'  :
         status == 'PROCESSING' ? 'rj-badge-processing' :
         status == 'COMPLETED'  ? 'rj-badge-completed'  :
+        status == 'CANCELED'   ? 'rj-badge-suspended'  :
         'rj-badge-closed'}"
       th:text="${status}">Status</span>
 </html>

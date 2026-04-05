@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Password match validation
+    //Password match validation
     var confirmPw = document.querySelector('input[name="confirmPassword"]');
     var password = document.querySelector('input[name="password"]');
     if (confirmPw && password) {
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Auto-dismiss success alerts
+    //dismiss success alerts
     document.querySelectorAll('.alert-success').forEach(function(alert) {
         setTimeout(function() {
             alert.style.transition = 'opacity 0.5s';

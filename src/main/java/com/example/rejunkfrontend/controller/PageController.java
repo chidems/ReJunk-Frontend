@@ -104,13 +104,21 @@ public class PageController {
 
     @GetMapping("/marketplace/{id}")
     public String itemDetail(@PathVariable UUID id, Model model) {
-        model.addAttribute("item", backendClient.getListing(id));
+        try {
+            model.addAttribute("item", backendClient.getListing(id));
+        } catch (Exception e) {
+            model.addAttribute("error", "Could not load item: " + e.getMessage());
+        }
         return "marketplace/item-detail";
     }
 
     @GetMapping("/marketplace/{id}/buy")
     public String checkout(@PathVariable UUID id, Model model) {
-        model.addAttribute("item", backendClient.getListing(id));
+        try {
+            model.addAttribute("item", backendClient.getListing(id));
+        } catch (Exception e) {
+            model.addAttribute("error", "Could not load item: " + e.getMessage());
+        }
         return "marketplace/checkout";
     }
 
@@ -181,7 +189,13 @@ public class PageController {
             model.addAttribute("recentRequests", List.of());
         }
         try {
-            model.addAttribute("notifications", backendClient.getNotificationsByUser(userId));
+            DateTimeFormatter notifFmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+            List<NotificationView> notifs = new ArrayList<>();
+            for (NotificationDto n : backendClient.getNotificationsByUser(userId)) {
+                String formatted = n.createdAt() != null ? notifFmt.format(n.createdAt()) : "";
+                notifs.add(new NotificationView(n.id(), n.type(), n.message(), n.read(), formatted));
+            }
+            model.addAttribute("notifications", notifs);
         } catch (Exception e) {
             model.addAttribute("notifications", List.of());
         }
@@ -238,7 +252,13 @@ public class PageController {
         if (user == null) return "redirect:/login";
         try {
             UUID userId = UUID.fromString(user.userId());
-            model.addAttribute("notifications", backendClient.getNotificationsByUser(userId));
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM d, yyyy · h:mm a").withZone(ZoneId.systemDefault());
+            List<NotificationView> notifications = new ArrayList<>();
+            for (NotificationDto n : backendClient.getNotificationsByUser(userId)) {
+                String formatted = n.createdAt() != null ? fmt.format(n.createdAt()) : "";
+                notifications.add(new NotificationView(n.id(), n.type(), n.message(), n.read(), formatted));
+            }
+            model.addAttribute("notifications", notifications);
         } catch (Exception e) {
             model.addAttribute("notifications", List.of());
             model.addAttribute("error", "Could not load notifications: " + e.getMessage());
@@ -246,8 +266,18 @@ public class PageController {
         return "customer/notifications";
     }
 
+    @PostMapping("/notifications/{id}/read")
+    public String markNotificationRead(@PathVariable UUID id, RedirectAttributes ra) {
+        try {
+            backendClient.markNotificationRead(id);
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not mark notification as read.");
+        }
+        return "redirect:/notifications";
+    }
+
     @GetMapping("/profile")
-    public String profile(HttpSession session, Model model) {
+    public String profile(HttpSession session) {
         if (getSessionUser(session) == null) return "redirect:/login";
         return "customer/profile";
     }
@@ -310,21 +340,29 @@ public class PageController {
     @GetMapping("/collections/{id}")
     public String collectionDetail(@PathVariable UUID id, HttpSession session, Model model) {
         if (getSessionUser(session) == null) return "redirect:/login";
-        CollectionRequestDto req = backendClient.getCollectionRequest(id);
-        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
-        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault());
-        String date = req.preferredPickupTime() != null ? dateFmt.format(req.preferredPickupTime()) : "";
-        String time = req.preferredPickupTime() != null ? timeFmt.format(req.preferredPickupTime()) : "";
+        try {
+            CollectionRequestDto req = backendClient.getCollectionRequest(id);
+            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
+            DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault());
+            String date = req.preferredPickupTime() != null ? dateFmt.format(req.preferredPickupTime()) : "";
+            String time = req.preferredPickupTime() != null ? timeFmt.format(req.preferredPickupTime()) : "";
 
-        List<String> allStatuses = List.of("SUBMITTED", "PAID", "SCHEDULED", "COLLECTED", "EVALUATED", "CLOSED");
-        int currentIndex = allStatuses.indexOf(req.requestStatus());
-        List<TimelineStep> timeline = new ArrayList<>();
-        for (int i = 0; i < allStatuses.size(); i++) {
-            boolean pending = i > currentIndex;
-            timeline.add(new TimelineStep(allStatuses.get(i), pending ? "" : "Completed", pending));
+            List<String> allStatuses = List.of("SUBMITTED", "PAID", "SCHEDULED", "COLLECTED", "EVALUATED", "CLOSED");
+            List<TimelineStep> timeline = new ArrayList<>();
+            if ("CANCELED".equals(req.requestStatus())) {
+                timeline.add(new TimelineStep("CANCELED", "", false));
+            } else {
+                int currentIndex = allStatuses.indexOf(req.requestStatus());
+                for (int i = 0; i < allStatuses.size(); i++) {
+                    boolean pending = i > currentIndex;
+                    timeline.add(new TimelineStep(allStatuses.get(i), pending ? "" : "Completed", pending));
+                }
+            }
+
+            model.addAttribute("collection", new CollectionDetailView(req.id(), date, req.requestStatus(), req.pickupAddress(), date, time, timeline));
+        } catch (Exception e) {
+            model.addAttribute("error", "Could not load collection request: " + e.getMessage());
         }
-
-        model.addAttribute("collection", new CollectionDetailView(req.id(), date, req.requestStatus(), req.pickupAddress(), date, time, timeline));
         return "customer/collection-detail";
     }
 
@@ -367,6 +405,17 @@ public class PageController {
             model.addAttribute("error", "Could not load collection requests: " + e.getMessage());
         }
         return "admin/add-items";
+    }
+
+    @PostMapping("/admin/collection-requests/{id}/status")
+    public String updateCollectionRequestStatus(@PathVariable UUID id, @RequestParam String status, RedirectAttributes ra) {
+        try {
+            backendClient.updateCollectionRequestStatus(id, status);
+            ra.addFlashAttribute("success", "Request status updated to " + status + ".");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not update status: " + e.getMessage());
+        }
+        return "redirect:/admin/add-items";
     }
 
     @GetMapping("/admin/add-item")
@@ -454,22 +503,34 @@ public class PageController {
 
     @PostMapping("/admin/users/{id}/suspend")
     public String suspendUser(@PathVariable UUID id, RedirectAttributes ra) {
-        backendClient.suspendUser(id);
-        ra.addFlashAttribute("success", "User suspended.");
+        try {
+            backendClient.suspendUser(id);
+            ra.addFlashAttribute("success", "User suspended.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not suspend user: " + e.getMessage());
+        }
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/users/{id}/activate")
     public String activateUser(@PathVariable UUID id, RedirectAttributes ra) {
-        backendClient.activateUser(id);
-        ra.addFlashAttribute("success", "User activated.");
+        try {
+            backendClient.activateUser(id);
+            ra.addFlashAttribute("success", "User activated.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not activate user: " + e.getMessage());
+        }
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/users/{id}/delete")
     public String deleteUser(@PathVariable UUID id, RedirectAttributes ra) {
-        backendClient.deleteUser(id);
-        ra.addFlashAttribute("success", "User deleted.");
+        try {
+            backendClient.deleteUser(id);
+            ra.addFlashAttribute("success", "User deleted.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not delete user: " + e.getMessage());
+        }
         return "redirect:/admin";
     }
 }

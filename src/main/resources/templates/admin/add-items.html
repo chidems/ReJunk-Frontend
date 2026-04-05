@@ -36,7 +36,33 @@
                     <div class="text-rj-light" style="font-size:13px;"
                          th:text="${req.pickupAddress}">123 Main St</div>
                 </div>
-                <span th:replace="~{fragments/helpers :: status-badge(${req.requestStatus})}"></span>
+                <div class="d-flex align-items-center gap-2">
+                    <span th:replace="~{fragments/helpers :: status-badge(${req.requestStatus})}"></span>
+                    <form th:if="${req.requestStatus == 'SUBMITTED'}"
+                          th:action="@{/admin/collection-requests/{id}/status(id=${req.id})}"
+                          method="post" class="d-inline">
+                        <input type="hidden" name="status" value="SCHEDULED">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Mark Scheduled</button>
+                    </form>
+                    <form th:if="${req.requestStatus == 'SCHEDULED'}"
+                          th:action="@{/admin/collection-requests/{id}/status(id=${req.id})}"
+                          method="post" class="d-inline">
+                        <input type="hidden" name="status" value="COLLECTED">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Mark Collected</button>
+                    </form>
+                    <form th:if="${req.requestStatus == 'COLLECTED'}"
+                          th:action="@{/admin/collection-requests/{id}/status(id=${req.id})}"
+                          method="post" class="d-inline">
+                        <input type="hidden" name="status" value="EVALUATED">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Mark Evaluated</button>
+                    </form>
+                    <form th:if="${req.requestStatus == 'EVALUATED'}"
+                          th:action="@{/admin/collection-requests/{id}/status(id=${req.id})}"
+                          method="post" class="d-inline">
+                        <input type="hidden" name="status" value="CLOSED">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Close Request</button>
+                    </form>
+                </div>
             </div>
 
             <!-- Items in this request -->
