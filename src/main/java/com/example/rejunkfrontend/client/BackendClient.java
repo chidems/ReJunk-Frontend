@@ -1,6 +1,7 @@
 package com.example.rejunkfrontend.client;
 
 import com.example.rejunkfrontend.dto.*;
+import com.example.rejunkfrontend.security.TokenHolder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -14,9 +15,16 @@ public class BackendClient {
 
     private final RestClient restClient;
 
-    public BackendClient(@Value("${backend.base-url}") String baseUrl) {
+    public BackendClient(@Value("${backend.base-url}") String baseUrl, TokenHolder tokenHolder) {
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)
+                .requestInterceptor((request, body, execution) -> {
+                    String token = tokenHolder.get();
+                    if (token != null) {
+                        request.getHeaders().set("Authorization", "Bearer " + token);
+                    }
+                    return execution.execute(request, body);
+                })
                 .build();
     }
 
@@ -114,6 +122,14 @@ public class BackendClient {
     }
 
     /// ITEMS
+
+    public ItemDto createItem(CreateItemRequest request) {
+        return restClient.post()
+                .uri("/items")
+                .body(request)
+                .retrieve()
+                .body(ItemDto.class);
+    }
 
     public ItemDto getItem(UUID id) {
         return restClient.get()

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(JAVA_HOME=\"C:/Users/cigde/.jdks/openjdk-23.0.1\")",
+      "Bash(JAVA_HOME=\"$JAVA_HOME\" ./mvnw compile)",
+      "Bash(mvn compile:*)",
+      "Bash(./mvnw compile:*)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files/Microsoft//**)",
+      "Bash(netstat -ano)",
+      "Bash(curl -s http://localhost:8081/)",
+      "Bash(curl:*)",
+      "Bash(cmd.exe /c \"cd C:\\\\\\\\Users\\\\\\\\cigde\\\\\\\\IdeaProjects\\\\\\\\ReJunk-Frontend && mvnw.cmd test -Dtest=PageControllerTest 2>&1\")"
+    ]
+  }
+}

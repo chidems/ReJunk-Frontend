@@ -90,7 +90,8 @@ public class PageController {
     // Marketplace
 
     @GetMapping("/marketplace")
-    public String marketplace(Model model) {
+    public String marketplace(HttpSession session, Model model) {
+        if (getSessionUser(session) == null) return "redirect:/login";
         try {
             model.addAttribute("items", backendClient.getActiveListings());
         } catch (Exception e) {
@@ -103,7 +104,8 @@ public class PageController {
     }
 
     @GetMapping("/marketplace/{id}")
-    public String itemDetail(@PathVariable UUID id, Model model) {
+    public String itemDetail(@PathVariable UUID id, HttpSession session, Model model) {
+        if (getSessionUser(session) == null) return "redirect:/login";
         try {
             model.addAttribute("item", backendClient.getListing(id));
         } catch (Exception e) {
@@ -117,7 +119,8 @@ public class PageController {
     }
 
     @GetMapping("/marketplace/{id}/buy")
-    public String checkout(@PathVariable UUID id, Model model) {
+    public String checkout(@PathVariable UUID id, HttpSession session, Model model) {
+        if (getSessionUser(session) == null) return "redirect:/login";
         try {
             model.addAttribute("item", backendClient.getListing(id));
         } catch (Exception e) {
@@ -412,6 +415,22 @@ public class PageController {
             model.addAttribute("error", "Could not load collection requests: " + e.getMessage());
         }
         return "admin/add-items";
+    }
+
+    @PostMapping("/admin/collection-requests/{id}/items")
+    public String addItemToCollection(@PathVariable UUID id,
+                                      @RequestParam UUID customerId,
+                                      @RequestParam String title,
+                                      @RequestParam(required = false) String description,
+                                      @RequestParam(required = false) String category,
+                                      RedirectAttributes ra) {
+        try {
+            backendClient.createItem(new CreateItemRequest(customerId, id, title, description, category));
+            ra.addFlashAttribute("success", "Item added to collection.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not add item: " + e.getMessage());
+        }
+        return "redirect:/admin/add-items";
     }
 
     @PostMapping("/admin/collection-requests/{id}/status")

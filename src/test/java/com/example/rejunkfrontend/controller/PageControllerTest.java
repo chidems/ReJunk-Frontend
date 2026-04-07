@@ -1,10 +1,7 @@
 package com.example.rejunkfrontend.controller;
 
 import com.example.rejunkfrontend.client.BackendClient;
-import com.example.rejunkfrontend.dto.AuthResponse;
-import com.example.rejunkfrontend.dto.ItemDto;
-import com.example.rejunkfrontend.dto.LoginRequest;
-import jakarta.servlet.http.HttpSession;
+import com.example.rejunkfrontend.dto.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,8 +43,8 @@ class PageControllerTest {
     @BeforeEach
     void setUp() {
         session = new MockHttpSession();
-        customerUser = new AuthResponse(UUID.randomUUID().toString(), "Jane Doe", "jane@example.com", "CUSTOMER", null);
-        adminUser = new AuthResponse(UUID.randomUUID().toString(), "Admin User", "admin@example.com", "ADMIN", null);
+        customerUser = new AuthResponse(null, UUID.randomUUID().toString(), "Jane Doe", "jane@example.com", "CUSTOMER", null);
+        adminUser = new AuthResponse(null, UUID.randomUUID().toString(), "Admin User", "admin@example.com", "ADMIN", null);
     }
 
     // LOGIN
@@ -84,21 +81,23 @@ class PageControllerTest {
 
     @Test
     void marketplace_backendAvailable_addsItemsToModel() {
+        session.setAttribute("user", customerUser);
         ItemDto item = new ItemDto(UUID.randomUUID(), "Old Lamp", "A used lamp", "GOOD", null, null, BigDecimal.valueOf(25.00), null, null, null);
-        when(backendClient.getActiveListings())
-                .thenReturn(List.of(item));
+        ListingDto listing = new ListingDto(UUID.randomUUID(), item, BigDecimal.valueOf(25.00), "ACTIVE");
+        when(backendClient.getActiveListings()).thenReturn(List.of(listing));
 
-        String view = pageController.marketplace(model);
+        String view = pageController.marketplace(session, model);
 
         assertEquals("marketplace/browse", view);
-        verify(model).addAttribute("items", List.of(item));
+        verify(model).addAttribute("items", List.of(listing));
     }
 
     @Test
     void marketplace_backendFails_addsEmptyListAndError() {
+        session.setAttribute("user", customerUser);
         when(backendClient.getActiveListings()).thenThrow(new RuntimeException("Service unavailable"));
 
-        String view = pageController.marketplace(model);
+        String view = pageController.marketplace(session, model);
 
         assertEquals("marketplace/browse", view);
         verify(model).addAttribute(eq("items"), eq(List.of()));
@@ -109,7 +108,6 @@ class PageControllerTest {
 
     @Test
     void dashboard_noSession_redirectsToLogin() {
-        // session has no "user" attribute
         String result = pageController.customerDashboard(session, model);
 
         assertEquals("redirect:/login", result);
@@ -136,5 +134,36 @@ class PageControllerTest {
         assertEquals("redirect:/marketplace/order-tracking", result);
         verify(backendClient).createOrder(any());
         verify(redirectAttributes).addFlashAttribute(eq("success"), any());
+    }
+
+    // ADD ITEM TO COLLECTION
+
+    @Test
+    void addItemToCollection_success_redirectsToAddItems() {
+        UUID collectionId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        when(backendClient.createItem(any(CreateItemRequest.class)))
+                .thenReturn(new ItemDto(UUID.randomUUID(), "Oak Chair", null, null, null, null, null, null, null, null));
+
+        String result = pageController.addItemToCollection(
+                collectionId, customerId, "Oak Chair", "Optional notes", "Chair", redirectAttributes);
+
+        assertEquals("redirect:/admin/add-items", result);
+        verify(backendClient).createItem(any(CreateItemRequest.class));
+        verify(redirectAttributes).addFlashAttribute(eq("success"), any());
+    }
+
+    @Test
+    void addItemToCollection_backendFails_setsErrorFlash() {
+        UUID collectionId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        when(backendClient.createItem(any(CreateItemRequest.class)))
+                .thenThrow(new RuntimeException("Backend error"));
+
+        String result = pageController.addItemToCollection(
+                collectionId, customerId, "Oak Chair", null, null, redirectAttributes);
+
+        assertEquals("redirect:/admin/add-items", result);
+        verify(redirectAttributes).addFlashAttribute(eq("error"), any());
     }
 }
