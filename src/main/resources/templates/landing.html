@@ -6,6 +6,47 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link th:href="@{/css/rejunk.css}" rel="stylesheet">
+    <style>
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .fade-up-delay-1 { transition-delay: 0.1s; }
+        .fade-up-delay-2 { transition-delay: 0.2s; }
+        .fade-up-delay-3 { transition-delay: 0.3s; }
+        .fade-up-delay-4 { transition-delay: 0.4s; }
+
+        .rj-section-divider {
+            border: none;
+            border-top: 1.5px solid var(--rj-border-light);
+            margin: 0;
+        }
+        .rj-why-section {
+            background: var(--rj-white);
+            border-top: 1.5px solid var(--rj-border-light);
+            border-bottom: 1.5px solid var(--rj-border-light);
+            padding: 80px 0;
+        }
+        .rj-faq-item {
+            border-bottom: 1px solid var(--rj-border-light);
+            padding: 20px 0;
+        }
+        .rj-faq-item:last-child { border-bottom: none; }
+        .rj-faq-item .question { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+        .rj-faq-item .answer { font-size: 14px; color: var(--rj-text-mid); line-height: 1.7; }
+        .rj-cta-section {
+            background: var(--rj-green);
+            padding: 80px 0;
+            text-align: center;
+        }
+        .rj-step-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .rj-step-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar-public}"></div>
@@ -13,52 +54,149 @@
 <!-- Hero -->
 <section class="rj-hero">
     <div class="container">
-        <h1>Turn your unwanted<br>furniture into cash</h1>
-        <p>We pick up your items, evaluate them, and sell them on our marketplace. You earn 50% of every sale.</p>
-        <div class="d-flex gap-3 justify-content-center">
-            <a th:href="@{/collections/new}" class="btn btn-primary px-4 py-2">Request a Pickup</a>
-            <a th:href="@{/marketplace}" class="btn btn-outline-primary px-4 py-2">Browse Marketplace</a>
+        <h1 class="fade-up">Turn your unwanted<br>furniture into cash</h1>
+        <p class="fade-up fade-up-delay-1">We pick up your items, evaluate them, and sell them on our marketplace.<br>You earn 50% of every sale.</p>
+        <div class="d-flex gap-3 justify-content-center fade-up fade-up-delay-2">
+            <a th:href="@{/collections/new}" class="btn btn-primary px-4 py-2 rj-hero-btn-primary">Request a Pickup</a>
+            <a th:href="@{/marketplace}" class="btn px-4 py-2 rj-hero-btn-secondary">Browse Marketplace</a>
         </div>
     </div>
 </section>
 
 <!-- How It Works -->
-<section class="py-5">
-    <div class="container">
+<section class="py-5" style="background: var(--rj-cream);">
+    <div class="container py-4">
+        <div class="text-center mb-5 fade-up">
+            <h2 class="fw-bold" style="font-size: 1.9rem;">How it works</h2>
+            <p class="text-rj-light mt-2" style="font-size: 15px;">We handle everything from pickup to sale. You just tell us what you have.</p>
+        </div>
         <div class="row g-4">
-            <div class="col-md-3">
+            <div class="col-md-3 fade-up fade-up-delay-1">
                 <div class="rj-step-card">
                     <div class="rj-step-number">1</div>
-                    <h5>Request Pickup</h5>
-                    <p>Submit item details &amp; schedule</p>
+                    <h5>Request a Pickup</h5>
+                    <p>Submit your item details and a pickup address. We'll schedule a time that works for you.</p>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 fade-up fade-up-delay-2">
                 <div class="rj-step-card">
                     <div class="rj-step-number">2</div>
                     <h5>We Collect &amp; Evaluate</h5>
-                    <p>Pay a small pickup fee</p>
+                    <p>Our team picks up and inspects your items. A small pickup fee is deducted from your earnings.</p>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 fade-up fade-up-delay-3">
                 <div class="rj-step-card">
                     <div class="rj-step-number">3</div>
                     <h5>Items Listed for Sale</h5>
-                    <p>We handle photos, pricing, listing</p>
+                    <p>We take care of photos, pricing, and listing on the ReJunk marketplace. No effort from you.</p>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 fade-up fade-up-delay-4">
                 <div class="rj-step-card">
                     <div class="rj-step-number">4</div>
-                    <h5>Get Paid</h5>
-                    <p>Earn 50% when your items sell</p>
+                    <h5>You Get Paid</h5>
+                    <p>Once your item sells, you earn 50% of the sale price. Payments are processed automatically.</p>
                 </div>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why ReJunk -->
+<section class="rj-why-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-md-6 fade-up">
+                <h2 class="fw-bold mb-4" style="font-size: 1.7rem;">Why use ReJunk?</h2>
+                <ul class="list-unstyled" style="font-size: 15px;">
+                    <li class="d-flex align-items-start gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-rj-green mt-1" style="font-size:18px; flex-shrink:0;"></i>
+                        <div><strong>No dealing with buyers.</strong> We handle all communication, negotiation, and payment on your behalf.</div>
+                    </li>
+                    <li class="d-flex align-items-start gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-rj-green mt-1" style="font-size:18px; flex-shrink:0;"></i>
+                        <div><strong>We do the work.</strong> Photos, pricing, and listing are all handled by our team.</div>
+                    </li>
+                    <li class="d-flex align-items-start gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-rj-green mt-1" style="font-size:18px; flex-shrink:0;"></i>
+                        <div><strong>Quality guaranteed.</strong> Every item is inspected before it hits the marketplace.</div>
+                    </li>
+                    <li class="d-flex align-items-start gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-rj-green mt-1" style="font-size:18px; flex-shrink:0;"></i>
+                        <div><strong>You keep 50%.</strong> Fair split, no hidden fees beyond the pickup cost.</div>
+                    </li>
+                    <li class="d-flex align-items-start gap-3">
+                        <i class="bi bi-recycle text-rj-green mt-1" style="font-size:18px; flex-shrink:0;"></i>
+                        <div><strong>Good for the planet.</strong> Keeping furniture out of landfills, one pickup at a time.</div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6 text-center fade-up fade-up-delay-2">
+                <img th:src="@{/images/move.jpg}" alt="ReJunk pickup"
+                     style="width:100%; max-width:420px; border-radius:16px; object-fit:cover; height:300px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section style="background: var(--rj-cream); padding: 80px 0;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="text-center mb-5 fade-up">
+                    <h2 class="fw-bold" style="font-size: 1.7rem;">Common questions</h2>
+                </div>
+                <div class="fade-up fade-up-delay-1">
+                    <div class="rj-faq-item">
+                        <div class="question">What items do you accept?</div>
+                        <div class="answer">We accept most second-hand furniture in reasonable condition — sofas, chairs, tables, desks, shelves, and more. Heavily damaged items may not be accepted after evaluation.</div>
+                    </div>
+                    <div class="rj-faq-item">
+                        <div class="question">How is the pickup fee calculated?</div>
+                        <div class="answer">The pickup fee covers transport and evaluation. It's a fixed cost deducted from your payout once your item sells. If an item doesn't sell, you won't owe anything extra.</div>
+                    </div>
+                    <div class="rj-faq-item">
+                        <div class="question">When do I get paid?</div>
+                        <div class="answer">Payouts are processed once a buyer completes their order. You'll get a notification when your item sells and again when the payout is on its way.</div>
+                    </div>
+                    <div class="rj-faq-item">
+                        <div class="question">Can I cancel a pickup request?</div>
+                        <div class="answer">Yes — you can cancel before our team has collected your items. Once collected, the evaluation process begins and cancellation is no longer possible.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="rj-cta-section fade-up">
+    <div class="container">
+        <h2 class="fw-bold text-white mb-2" style="font-size: 1.9rem;">Ready to clear out your space?</h2>
+        <p style="color: rgba(255,255,255,0.8); font-size: 15px; margin-bottom: 32px;">Join ReJunk and turn your unwanted furniture into money.</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a th:href="@{/register}" class="btn px-4 py-2 fw-bold"
+               style="background:#fff; color:var(--rj-green); border:2px solid #fff; border-radius:8px;">Get Started</a>
+            <a th:href="@{/marketplace}" class="btn px-4 py-2 fw-bold"
+               style="background:transparent; color:#fff; border:2px solid rgba(255,255,255,0.6); border-radius:8px;">Browse Marketplace</a>
         </div>
     </div>
 </section>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
 </body>
 </html>

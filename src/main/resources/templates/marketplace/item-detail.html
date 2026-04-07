@@ -2,39 +2,91 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${item.title != null ? item.title + ' — ReJunk' : 'Item — ReJunk'}">Item — ReJunk</title>
+    <title th:text="${item != null ? item.title + ' — ReJunk' : 'Item — ReJunk'}">Item — ReJunk</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link th:href="@{/css/rejunk.css}" rel="stylesheet">
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar-customer}"></div>
+
 <main class="rj-page-bg">
     <div class="container py-4">
-        <a th:href="@{/marketplace}" class="d-inline-block mb-3"><i class="bi bi-arrow-left me-1"></i> Back to Marketplace</a>
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="rj-item-image">
-                    <img th:if="${item.imageUrl != null}" th:src="${item.imageUrl}" th:alt="${item.title}">
-                    <i th:unless="${item.imageUrl != null}" class="bi bi-image" style="font-size:4rem; color:#bbb;"></i>
+        <a th:href="@{/marketplace}" class="text-rj-green d-inline-block mb-4">
+            <i class="bi bi-arrow-left me-1"></i> Back to Marketplace
+        </a>
+
+        <div th:if="${error}" class="rj-card text-center py-5">
+            <i class="bi bi-exclamation-circle" style="font-size:3rem; color:var(--rj-text-light);"></i>
+            <p class="mt-3 text-rj-light" th:text="${error}">Could not load item.</p>
+            <a th:href="@{/marketplace}" class="btn btn-primary px-4 mt-2">Back to Marketplace</a>
+        </div>
+
+        <div class="row g-4" th:if="${item != null}">
+
+            <!-- Left: image -->
+            <div class="col-lg-5">
+                <div class="rj-card p-0 overflow-hidden d-flex align-items-center justify-content-center"
+                     style="min-height: 360px;">
+                    <img th:src="${item.imageUrl} ?: @{/images/chair.jpg}"
+                         th:alt="${item.title}"
+                         style="width:100%; height:360px; object-fit:cover;">
                 </div>
             </div>
-            <div class="col-lg-6">
-                <h1 class="fw-bold mb-2" th:text="${item.title} ?: 'Oak Dining Table'">Oak Dining Table</h1>
-                <span class="rj-condition-badge mb-3 d-inline-block" th:text="${item.condition} ?: 'Good Condition'">Good Condition</span>
-                <div class="rj-price-big mt-2"><sup>$</sup><span th:text="${item.price} ?: '180.00'">180.00</span></div>
-                <p class="text-rj-light mt-1" th:text="${item.category}">Text</p>
 
-                <div class="rj-description mt-4">
-                    <div class="desc-header">Description <i class="bi bi-chevron-up"></i></div>
-                    <div class="desc-body" th:text="${item.description} ?: 'Solid oak dining table, seats 6. Minor surface scratches. Dimensions 72\" x 36\" x 30\". Sturdy construction, great for everyday use.'">Description text</div>
-            </div>
+            <!-- Right: details -->
+            <div class="col-lg-7">
+                <div class="rj-card h-100 d-flex flex-column">
 
-            <a th:href="@{/marketplace/{id}/buy(id=${item.id})}" class="btn btn-primary w-100 py-3 mt-4 fw-bold" th:text="'Buy Now - $' + (${item.price} ?: '180.00')">Buy Now - $180.00</a>
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h1 class="fw-bold mb-0" style="font-size:1.6rem;" th:text="${item.title}">Item Title</h1>
+                        <span th:replace="~{fragments/helpers :: status-badge(${item.listingStatus})}"></span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="rj-condition-badge" th:text="${item.condition}">Good</span>
+                        <span class="text-rj-light" style="font-size:13px;" th:if="${item.category != null}"
+                              th:text="'· ' + ${item.category}"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <span style="font-size: 2rem; font-weight: 800; color: var(--rj-text);"
+                              th:text="'$' + ${item.price}">$0.00</span>
+                    </div>
+
+                    <div class="mb-4" th:if="${item.description != null}">
+                        <h6 class="fw-bold mb-2">Description</h6>
+                        <p class="text-rj-mid mb-0" th:text="${item.description}">Item description.</p>
+                    </div>
+
+                    <div class="rj-card mb-4" style="background: var(--rj-cream); padding: 14px 16px;">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-recycle text-rj-green"></i>
+                            <span class="fw-semibold" style="font-size:13px;">Why buy from ReJunk?</span>
+                        </div>
+                        <div class="text-rj-light" style="font-size:12px; line-height:1.8;">
+                            Every item is collected, inspected, and priced by our team. You're getting a
+                            quality second-hand item — and helping keep furniture out of the landfill.
+                        </div>
+                    </div>
+
+                    <div class="mt-auto">
+                        <a th:href="@{/marketplace/{id}/buy(id=${item.id})}"
+                           class="btn btn-primary w-100 py-3 fw-bold"
+                           th:text="'Buy Now — $' + ${item.price}">
+                            Buy Now
+                        </a>
+                        <p class="text-center text-rj-light mt-2 mb-0" style="font-size:12px;">
+                            <i class="bi bi-lock-fill me-1"></i>Secure checkout
+                        </p>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
 </main>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

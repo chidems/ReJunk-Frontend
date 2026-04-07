@@ -28,7 +28,7 @@
         <div class="rj-card p-0 overflow-hidden" th:unless="${#lists.isEmpty(notifications)}">
             <div th:each="notif : ${notifications}"
                  class="rj-notif-card"
-                 th:classappend="${!notif.read} ? 'fw-semibold'">
+                 th:classappend="${!notif.read} ? 'unread fw-semibold'">
 
                 <span class="rj-notif-icon">
                     <i class="bi"

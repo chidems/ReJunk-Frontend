@@ -13,7 +13,6 @@
         <div class="collapse navbar-collapse justify-content-end" id="navPublic">
             <ul class="navbar-nav align-items-center gap-1">
                 <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'marketplace'} ? 'active'" th:href="@{/marketplace}">Marketplace</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'how'} ? 'active'" href="#">How It Works</a></li>
                 <li class="nav-item ms-2"><a class="btn-signin" th:href="@{/login}">Sign in</a></li>
                 <li class="nav-item ms-1"><a class="btn-signup" th:href="@{/register}">Sign Up</a></li>
             </ul>

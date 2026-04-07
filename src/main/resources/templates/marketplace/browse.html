@@ -56,7 +56,11 @@
                     <div class="col-md-4" th:each="item : ${items}">
                         <a th:href="@{/marketplace/{id}(id=${item.id})}" class="text-decoration-none">
                             <div class="rj-item-card">
-                                <div class="item-img"><i class="bi bi-image" style="font-size:2.5rem;"></i></div>
+                                <div class="item-img">
+                                    <img th:src="${item.imageUrl} ?: @{/images/chair.jpg}"
+                                         th:alt="${item.title}"
+                                         style="width:100%; height:100%; object-fit:cover;">
+                                </div>
                                 <div class="card-body">
                                     <div class="item-name" th:text="${item.title}">Oak Dining Table</div>
                                     <div class="item-price" th:text="'$' + ${item.price}">$180</div>

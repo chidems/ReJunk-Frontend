@@ -70,7 +70,11 @@
                 No items recorded yet.
             </div>
             <div th:each="item : ${req.items}" class="rj-evaluate-card">
-                <div class="eval-img"></div>
+                <div class="eval-img" style="overflow:hidden;">
+                    <img th:src="${item.imageUrl} ?: @{/images/chair.jpg}"
+                         th:alt="${item.title}"
+                         style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
+                </div>
                 <div class="flex-grow-1">
                     <h5 th:text="${item.title}">Item Name</h5>
                     <div class="eval-desc" th:text="${item.description} ?: 'No description.'">Description</div>
