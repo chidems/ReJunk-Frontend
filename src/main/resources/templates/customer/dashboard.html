@@ -15,12 +15,14 @@
             <div class="col-lg-7">
                 <h2 class="rj-section-title">Recent Collection Requests</h2>
                 <div class="rj-card-green p-3">
-                    <div th:each="req : ${recentRequests}" class="rj-request-card">
+                    <div th:if="${#lists.isEmpty(recentRequests)}" class="text-rj-light" style="font-size:14px;">
+                        You have no recent collection requests.
+                    </div>
+                    <div th:each="req, stat : ${recentRequests}" class="rj-request-card">
                         <div>
-                            <div class="req-id" th:text="'Request #' + ${req.id}">Request #CR-1042</div>
+                            <div class="req-id" th:text="'Request ' + ${stat.count} + ' — ' + ${req.date}">Request 1 — Feb 8, 2026</div>
                             <div class="req-meta">
-                                <span th:text="${req.date}">Feb 8, 2026</span>
-                                <span th:if="${!#strings.isEmpty(req.time)}"> · <span th:text="${req.time}">10:00 AM</span></span>
+                                <span th:if="${!#strings.isEmpty(req.time)}" th:text="${req.time}">10:00 AM</span>
                                 <span th:if="${!#strings.isEmpty(req.address)}"> · <span th:text="${req.address}">123 Main St</span></span>
                             </div>
                         </div>

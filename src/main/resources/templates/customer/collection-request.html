@@ -48,8 +48,18 @@
                         <h4 class="fw-bold mb-3">Pickup Details</h4>
                         <div class="mb-3"><label class="rj-form-label">Pickup Address</label><input type="text" name="address" class="form-control" placeholder="Value"></div>
                         <div class="mb-3"><label class="rj-form-label">City</label><select name="city" class="form-select"><option>Select</option><option>Vancouver</option><option>Burnaby</option></select></div>
-                        <div class="mb-3"><label class="rj-form-label">Preferred Date</label><input type="date" name="preferredDate" class="form-control"></div>
-                        <div class="mb-3"><label class="rj-form-label">Preferred Time</label><input type="time" name="preferredTime" class="form-control"></div>
+                        <div class="mb-3">
+                            <label class="rj-form-label">Preferred Date</label>
+                            <input type="date" name="preferredDate" id="preferredDate" class="form-control">
+                            <div id="dateWarning" class="text-danger mt-1" style="font-size:13px; display:none;">Please select a date after today.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="rj-form-label">Preferred Time</label>
+                            <select name="preferredTime" id="preferredTime" class="form-select">
+                                <option value="">Select a time</option>
+                            </select>
+                            <div id="timeWarning" class="text-danger mt-1" style="font-size:13px; display:none;">Pickup time must be between 8:00 AM and 5:00 PM.</div>
+                        </div>
                         <div class="mb-3"><label class="rj-form-label">Special Instructions</label><textarea name="instructions" class="form-control" rows="3" placeholder="Value"></textarea></div>
                     </div>
                 </div>
@@ -59,5 +69,36 @@
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const dateInput = document.getElementById('preferredDate');
+    const dateWarning = document.getElementById('dateWarning');
+    const timeSelect = document.getElementById('preferredTime');
+    const timeWarning = document.getElementById('timeWarning');
+
+    // Set min date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.min = tomorrow.toISOString().split('T')[0];
+
+    // Populate time options: 8:00 AM to 5:00 PM in 5-minute increments
+    for (let h = 8; h <= 17; h++) {
+        for (let m = 0; m < 60; m += 5) {
+            if (h === 17 && m > 0) break;
+            const hour12 = h > 12 ? h - 12 : h;
+            const ampm = h < 12 ? 'AM' : 'PM';
+            const label = `${hour12}:${String(m).padStart(2, '0')} ${ampm}`;
+            const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            const option = new Option(label, value);
+            timeSelect.add(option);
+        }
+    }
+
+    dateInput.addEventListener('change', function () {
+        const selected = new Date(this.value + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        dateWarning.style.display = selected <= today ? 'block' : 'none';
+    });
+</script>
 </body>
 </html>

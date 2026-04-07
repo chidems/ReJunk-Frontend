@@ -32,17 +32,17 @@
 
                 <span class="rj-notif-icon">
                     <i class="bi"
-                       th:classappend="${notif.type == 'PAYMENT_CONFIRMED'}         ? 'bi-credit-card-fill'       :
-                                       ${notif.type == 'PICKUP_SCHEDULED'}          ? 'bi-calendar-check-fill'    :
-                                       ${notif.type == 'ITEM_EVALUATED'}            ? 'bi-clipboard2-check-fill'  :
-                                       ${notif.type == 'LISTING_CREATED'}           ? 'bi-tag-fill'               :
-                                       ${notif.type == 'ITEM_SOLD'}                 ? 'bi-bag-check-fill'         :
-                                       ${notif.type == 'PAYOUT_CREATED'}            ? 'bi-cash-stack'             :
-                                       ${notif.type == 'ACCOUNT_SUSPENDED'}         ? 'bi-slash-circle-fill'      :
-                                       ${notif.type == 'COLLECTION_REQUEST_UPDATED'} ? 'bi-arrow-repeat'          :
-                                       ${notif.type == 'ITEM_ADDED'}               ? 'bi-plus-circle-fill'        :
-                                       ${notif.type == 'ITEM_PROCESSED'}            ? 'bi-gear-fill'              :
-                                       'bi-info-circle-fill'">
+                       th:classappend="${notif.type == 'PAYMENT_CONFIRMED'} ? 'bi-credit-card-fill' :
+                                       (${notif.type == 'PICKUP_SCHEDULED'} ? 'bi-calendar-check-fill' :
+                                       (${notif.type == 'ITEM_EVALUATED'} ? 'bi-clipboard2-check-fill' :
+                                       (${notif.type == 'LISTING_CREATED'} ? 'bi-tag-fill' :
+                                       (${notif.type == 'ITEM_SOLD'} ? 'bi-bag-check-fill' :
+                                       (${notif.type == 'PAYOUT_CREATED'} ? 'bi-cash-stack' :
+                                       (${notif.type == 'ACCOUNT_SUSPENDED'} ? 'bi-slash-circle-fill' :
+                                       (${notif.type == 'COLLECTION_REQUEST_UPDATED'} ? 'bi-arrow-repeat' :
+                                       (${notif.type == 'ITEM_ADDED'} ? 'bi-plus-circle-fill' :
+                                       (${notif.type == 'ITEM_PROCESSED'} ? 'bi-gear-fill' :
+                                       'bi-info-circle-fill')))))))))">
                     </i>
                 </span>
 

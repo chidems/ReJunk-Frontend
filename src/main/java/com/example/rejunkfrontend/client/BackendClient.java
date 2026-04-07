@@ -132,33 +132,33 @@ public class BackendClient {
 
     /// LISTINGS
 
-    public ItemDto createListing(CreateListingRequest request) {
+    public ListingDto createListing(CreateListingRequest request) {
         return restClient.post()
                 .uri("/listings")
                 .body(request)
                 .retrieve()
-                .body(ItemDto.class);
+                .body(ListingDto.class);
     }
 
-    public List<ItemDto> getActiveListings() {
+    public List<ListingDto> getActiveListings() {
         return restClient.get()
                 .uri("/listings")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }
 
-    public List<ItemDto> getAllListings() {
+    public List<ListingDto> getAllListings() {
         return restClient.get()
                 .uri("/listings/all")
                 .retrieve()
                 .body(new ParameterizedTypeReference<>() {});
     }
 
-    public ItemDto getListing(UUID id) {
+    public ListingDto getListing(UUID id) {
         return restClient.get()
                 .uri("/listings/{id}", id)
                 .retrieve()
-                .body(ItemDto.class);
+                .body(ListingDto.class);
     }
 
     ///  ORDERS

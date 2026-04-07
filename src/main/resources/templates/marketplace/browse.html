@@ -53,17 +53,20 @@
                     </div>
                 </div>
                 <div class="row g-3">
-                    <div class="col-md-4" th:each="item : ${items}">
-                        <a th:href="@{/marketplace/{id}(id=${item.id})}" class="text-decoration-none">
+                    <div class="col-md-4" th:each="listing : ${items}">
+                        <a th:href="@{/marketplace/{id}(id=${listing.id})}" class="text-decoration-none">
                             <div class="rj-item-card">
                                 <div class="item-img">
-                                    <img th:src="${item.imageUrl} ?: @{/images/chair.jpg}"
-                                         th:alt="${item.title}"
+                                    <img th:src="@{/images/chair.jpg}"
+                                         th:alt="${listing.item.title}"
                                          style="width:100%; height:100%; object-fit:cover;">
                                 </div>
                                 <div class="card-body">
-                                    <div class="item-name" th:text="${item.title}">Oak Dining Table</div>
-                                    <div class="item-price" th:text="'$' + ${item.price}">$180</div>
+                                    <div class="item-name" th:text="${listing.item.title} ?: 'Untitled Item'">Oak Dining Table</div>
+                                    <div class="text-rj-light mt-1" style="font-size:12px; line-height:1.4;"
+                                         th:if="${listing.item.description != null}"
+                                         th:text="${#strings.abbreviate(listing.item.description, 60)}">Short description here</div>
+                                    <div class="item-price mt-2" th:text="'$' + ${listing.price}">$180</div>
                                 </div>
                             </div>
                         </a>

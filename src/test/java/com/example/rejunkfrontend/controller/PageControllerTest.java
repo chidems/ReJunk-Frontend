@@ -85,7 +85,8 @@ class PageControllerTest {
     @Test
     void marketplace_backendAvailable_addsItemsToModel() {
         ItemDto item = new ItemDto(UUID.randomUUID(), "Old Lamp", "A used lamp", "GOOD", null, null, BigDecimal.valueOf(25.00), null, null, null);
-        when(backendClient.getActiveListings()).thenReturn(List.of(item));
+        when(backendClient.getActiveListings())
+                .thenReturn(List.of(item));
 
         String view = pageController.marketplace(model);
 

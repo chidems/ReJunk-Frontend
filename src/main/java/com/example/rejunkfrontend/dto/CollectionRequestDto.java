@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public record CollectionRequestDto(
         UUID id,
-        UUID customerId,
+        UserDto customer,
         String pickupAddress,
         Instant preferredPickupTime,
         BigDecimal pickupFee,

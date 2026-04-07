@@ -107,7 +107,11 @@ public class PageController {
         try {
             model.addAttribute("item", backendClient.getListing(id));
         } catch (Exception e) {
-            model.addAttribute("error", "Could not load item: " + e.getMessage());
+            try {
+                model.addAttribute("item", backendClient.getItem(id));
+            } catch (Exception e2) {
+                model.addAttribute("error", "Could not load item.");
+            }
         }
         return "marketplace/item-detail";
     }
@@ -232,13 +236,16 @@ public class PageController {
         if (user == null) return "redirect:/login";
         try {
             UUID userId = UUID.fromString(user.userId());
-            List<ItemDto> items = new ArrayList<>();
+            java.util.Set<UUID> userItemIds = new java.util.HashSet<>();
             for (CollectionRequestDto r : backendClient.getCollectionRequestsByUser(userId)) {
                 if (r.items() != null) {
-                    items.addAll(r.items());
+                    r.items().forEach(item -> userItemIds.add(item.id()));
                 }
             }
-            model.addAttribute("items", items);
+            List<ListingDto> listings = backendClient.getAllListings().stream()
+                    .filter(l -> userItemIds.contains(l.item().id()))
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("items", listings);
         } catch (Exception e) {
             model.addAttribute("items", List.of());
             model.addAttribute("error", "Could not load items: " + e.getMessage());
