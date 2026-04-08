@@ -10,7 +10,8 @@
       "Bash(netstat -ano)",
       "Bash(curl -s http://localhost:8081/)",
       "Bash(curl:*)",
-      "Bash(cmd.exe /c \"cd C:\\\\\\\\Users\\\\\\\\cigde\\\\\\\\IdeaProjects\\\\\\\\ReJunk-Frontend && mvnw.cmd test -Dtest=PageControllerTest 2>&1\")"
+      "Bash(cmd.exe /c \"cd C:\\\\\\\\Users\\\\\\\\cigde\\\\\\\\IdeaProjects\\\\\\\\ReJunk-Frontend && mvnw.cmd test -Dtest=PageControllerTest 2>&1\")",
+      "Bash(xargs grep:*)"
     ]
   }
 }

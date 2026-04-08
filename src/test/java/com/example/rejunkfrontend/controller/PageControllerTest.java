@@ -146,7 +146,7 @@ class PageControllerTest {
                 .thenReturn(new ItemDto(UUID.randomUUID(), "Oak Chair", null, null, null, null, null, null, null, null));
 
         String result = pageController.addItemToCollection(
-                collectionId, customerId, "Oak Chair", "Optional notes", "Chair", redirectAttributes);
+                collectionId, customerId, "Oak Chair", "Optional notes", "GOOD", redirectAttributes);
 
         assertEquals("redirect:/admin/add-items", result);
         verify(backendClient).createItem(any(CreateItemRequest.class));

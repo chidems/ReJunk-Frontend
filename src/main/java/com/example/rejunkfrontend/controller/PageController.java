@@ -422,10 +422,10 @@ public class PageController {
                                       @RequestParam UUID customerId,
                                       @RequestParam String title,
                                       @RequestParam(required = false) String description,
-                                      @RequestParam(required = false) String category,
+                                      @RequestParam(required = false) String condition,
                                       RedirectAttributes ra) {
         try {
-            backendClient.createItem(new CreateItemRequest(customerId, id, title, description, category));
+            backendClient.createItem(new CreateItemRequest(customerId, id, title, description, condition));
             ra.addFlashAttribute("success", "Item added to collection.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Could not add item: " + e.getMessage());

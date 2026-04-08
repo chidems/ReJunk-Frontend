@@ -1,11 +1,13 @@
 package com.example.rejunkfrontend.client;
 
 import com.example.rejunkfrontend.dto.*;
-import com.example.rejunkfrontend.security.TokenHolder;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,17 +17,31 @@ public class BackendClient {
 
     private final RestClient restClient;
 
-    public BackendClient(@Value("${backend.base-url}") String baseUrl, TokenHolder tokenHolder) {
+    public BackendClient(@Value("${backend.base-url}") String baseUrl) {
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)
                 .requestInterceptor((request, body, execution) -> {
-                    String token = tokenHolder.get();
+                    String token = resolveToken();
                     if (token != null) {
                         request.getHeaders().set("Authorization", "Bearer " + token);
                     }
                     return execution.execute(request, body);
                 })
                 .build();
+    }
+
+    private static String resolveToken() {
+        var attrs = RequestContextHolder.getRequestAttributes();
+        if (attrs instanceof ServletRequestAttributes sra) {
+            HttpSession session = sra.getRequest().getSession(false);
+            if (session != null) {
+                Object user = session.getAttribute("user");
+                if (user instanceof AuthResponse auth) {
+                    return auth.token();
+                }
+            }
+        }
+        return null;
     }
 
     /// AUTH
