@@ -15,6 +15,9 @@
 
 <main class="rj-page-bg">
     <div class="container py-4">
+        <a th:href="@{/admin}" class="d-inline-flex align-items-center gap-1 text-muted small mb-3 text-decoration-none">
+            <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
+        </a>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="rj-page-title mb-0">Listings</h1>
@@ -23,6 +26,16 @@
             <a th:href="@{/admin/add-items}" class="btn btn-primary px-4">
                 <i class="bi bi-plus-lg me-1"></i> Add Items
             </a>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
 
         <!-- Empty state -->
@@ -59,11 +72,17 @@
                         <td>
                             <span th:replace="~{fragments/helpers :: status-badge(${listing.listingStatus})}"></span>
                         </td>
-                        <td>
+                        <td class="d-flex gap-2">
                             <a th:href="@{/marketplace/{id}(id=${listing.id})}"
                                class="btn btn-outline-secondary btn-sm">
                                 View
                             </a>
+                            <form th:action="@{/admin/listings/{id}/delete(id=${listing.id})}" method="post"
+                                  onsubmit="return confirm('Remove this listing from the marketplace?')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 </tbody>

@@ -3,6 +3,8 @@ package com.example.rejunkfrontend.controller;
 import com.example.rejunkfrontend.client.BackendClient;
 import com.example.rejunkfrontend.dto.*;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,8 @@ import java.util.UUID;
 
 @Controller
 public class PageController {
+
+    private static final Logger log = LoggerFactory.getLogger(PageController.class);
 
     private final BackendClient backendClient;
 
@@ -50,7 +54,8 @@ public class PageController {
         try {
             AuthResponse user = backendClient.login(new LoginRequest(email, password));
             session.setAttribute("user", user);
-            if ("ADMIN".equalsIgnoreCase(user.role())) {
+            log.info("Login: user={} role='{}'", user.email(), user.role());
+            if (user.role() != null && user.role().toUpperCase().contains("ADMIN")) {
                 return "redirect:/admin";
             }
             return "redirect:/dashboard";
@@ -100,6 +105,7 @@ public class PageController {
         }
         model.addAttribute("filters", List.of());
         model.addAttribute("categories", List.of());
+        model.addAttribute("activePage", "marketplace");
         return "marketplace/browse";
     }
 
@@ -206,6 +212,7 @@ public class PageController {
         } catch (Exception e) {
             model.addAttribute("notifications", List.of());
         }
+        model.addAttribute("activePage", "dashboard");
         return "customer/dashboard";
     }
 
@@ -230,6 +237,7 @@ public class PageController {
             model.addAttribute("collections", List.of());
             model.addAttribute("error", "Could not load collections: " + e.getMessage());
         }
+        model.addAttribute("activePage", "requests");
         return "customer/collections";
     }
 
@@ -253,6 +261,7 @@ public class PageController {
             model.addAttribute("items", List.of());
             model.addAttribute("error", "Could not load items: " + e.getMessage());
         }
+        model.addAttribute("activePage", "items");
         return "customer/my-items";
     }
 
@@ -273,6 +282,7 @@ public class PageController {
             model.addAttribute("notifications", List.of());
             model.addAttribute("error", "Could not load notifications: " + e.getMessage());
         }
+        model.addAttribute("activePage", "notifications");
         return "customer/notifications";
     }
 
@@ -403,6 +413,7 @@ public class PageController {
             model.addAttribute("customerCount", 0);
             model.addAttribute("error", "Could not load users: " + e.getMessage());
         }
+        model.addAttribute("activePage", "admin-dashboard");
         return "admin/dashboard";
     }
 
@@ -414,6 +425,7 @@ public class PageController {
             model.addAttribute("requests", List.of());
             model.addAttribute("error", "Could not load collection requests: " + e.getMessage());
         }
+        model.addAttribute("activePage", "add-items");
         return "admin/add-items";
     }
 
@@ -484,6 +496,7 @@ public class PageController {
             model.addAttribute("customers", List.of());
             model.addAttribute("error", "Could not load customers: " + e.getMessage());
         }
+        model.addAttribute("activePage", "customers");
         return "admin/customers";
     }
 
@@ -502,6 +515,7 @@ public class PageController {
             model.addAttribute("orders", List.of());
             model.addAttribute("error", "Could not load orders: " + e.getMessage());
         }
+        model.addAttribute("activePage", "orders");
         return "admin/orders";
     }
 
@@ -524,7 +538,19 @@ public class PageController {
             model.addAttribute("listings", List.of());
             model.addAttribute("error", "Could not load listings: " + e.getMessage());
         }
+        model.addAttribute("activePage", "listings");
         return "admin/listings";
+    }
+
+    @PostMapping("/admin/listings/{id}/delete")
+    public String deleteListing(@PathVariable UUID id, RedirectAttributes ra) {
+        try {
+            backendClient.removeListing(id);
+            ra.addFlashAttribute("success", "Listing removed.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Could not remove listing: " + e.getMessage());
+        }
+        return "redirect:/admin/listings";
     }
 
     @PostMapping("/admin/users/{id}/suspend")

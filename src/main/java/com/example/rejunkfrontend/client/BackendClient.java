@@ -193,6 +193,14 @@ public class BackendClient {
                 .body(ListingDto.class);
     }
 
+    public void removeListing(UUID id) {
+        restClient.patch()
+                .uri("/listings/{id}/status", id)
+                .body(new UpdateListingStatusRequest("INACTIVE"))
+                .retrieve()
+                .toBodilessEntity();
+    }
+
     ///  ORDERS
 
     public OrderDto createOrder(CreateOrderRequest request) {

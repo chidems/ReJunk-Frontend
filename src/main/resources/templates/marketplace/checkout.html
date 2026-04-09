@@ -11,7 +11,7 @@
     <link th:href="@{/css/rejunk.css}" rel="stylesheet">
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: navbar-customer}"></div>
+<div th:replace="${session.user != null and #strings.toUpperCase(session.user.role).contains('ADMIN')} ? ~{fragments/navbar :: navbar-admin} : ~{fragments/navbar :: navbar-customer}"></div>
 
 <main class="rj-page-bg">
     <div class="container py-4">

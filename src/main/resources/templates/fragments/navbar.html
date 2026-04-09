@@ -69,8 +69,20 @@
                 <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'listings'} ? 'active'" th:href="@{/admin/listings}">Listings</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'orders'} ? 'active'" th:href="@{/admin/orders}">Orders</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${activePage == 'customers'} ? 'active'" th:href="@{/admin/customers}">Customers</a></li>
-                <li class="nav-item ms-2">
-                    <a class="settings-icon" href="#"><i class="bi bi-gear-fill"></i></a>
+                <li class="nav-item ms-2 dropdown">
+                    <a class="settings-icon dropdown-toggle" href="#" id="adminSettingsDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-gear-fill"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminSettingsDropdown">
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </div>
